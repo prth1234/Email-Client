@@ -1,0 +1,5 @@
+/* Reset handled by Primer BaseStyles */
+body {
+  margin: 0;
+  padding: 0;
+}
