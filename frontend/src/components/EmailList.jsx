@@ -141,12 +141,7 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                                 >
                                     {email.snippet}
                                 </Text>
-
-                                {email.category !== 'Primary' && (
-                                    <Label variant={CATEGORY_CONFIG[email.category]?.color || 'default'} size="small" sx={{ flexShrink: 0 }}>
-                                        {email.category}
-                                    </Label>
-                                )}
+                                {/* Tag removed as requested */}
                             </Box>
                         </Box>
 

@@ -17,11 +17,10 @@ const Sidebar = ({ width, onResizeStart, children }) => {
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                borderRight: '1px solid',
-                borderColor: 'border.default',
+                flexDirection: 'column',
                 position: 'relative',
                 flexShrink: 0,
-                bg: '#0d1117',
+                bg: '#000000',
                 transition: 'width 0.05s linear'
             }}
         >

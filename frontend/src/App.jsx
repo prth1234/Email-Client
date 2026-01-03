@@ -14,7 +14,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
-  const [sidebarWidth, setSidebarWidth] = useState(450) // Wider default width
+  const [sidebarWidth, setSidebarWidth] = useState(600) // Increased default width
   const [isResizing, setIsResizing] = useState(false)
 
   const [nextPageToken, setNextPageToken] = useState(null)
@@ -165,7 +165,7 @@ function App() {
   )
 
   return (
-    <Box bg="#0d1117" position="relative" display="flex" height="100vh" overflow="hidden">
+    <Box bg="#000000" position="relative" display="flex" height="100vh" overflow="hidden">
       {authenticated ? (
         <>
           <Sidebar
@@ -238,7 +238,7 @@ function App() {
         body {
           margin: 0;
           overflow: hidden; /* Prevent body scroll */
-          background-color: #0d1117; /* Global dark bg */
+          background-color: #000000; /* Global dark bg */
         }
         ::selection {
             background-color: rgba(31, 111, 235, 0.4);

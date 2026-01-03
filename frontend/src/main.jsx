@@ -6,7 +6,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider colorMode="night" preventSSRMismatch>
+    <ThemeProvider colorMode="dark" preventSSRMismatch>
       <BaseStyles>
         <App />
       </BaseStyles>
