@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { Box, TextInput, Spinner } from '@primer/react'
+import { Box, TextInput, Spinner, ThemeProvider, BaseStyles } from '@primer/react'
 import { SearchIcon, XIcon } from '@primer/octicons-react'
+import { MdLightMode, MdDarkMode } from 'react-icons/md'
 import Sidebar from './components/Sidebar'
 import EmailList from './components/EmailList'
 import EmailDetail from './components/EmailDetail'
@@ -172,93 +173,145 @@ function App() {
     email.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     email.senderName?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  const bg = colorMode === 'light' ? '#ffffff' : '#000000'
+  const isLight = colorMode === 'light'
+  const inputBg = isLight ? '#f6f8fa' : '#0d1117'
+  const inputBorder = isLight ? '#d0d7de' : '#30363d'
+  const inputText = isLight ? '#24292f' : '#e6edf3'
 
   return (
-    <Box sx={{ backgroundColor: '#000000', pl: '12px' }} position="relative" display="flex" height="100vh" overflow="hidden">
-      {authenticated ? (
-        <>
-          <Sidebar
-            width={sidebarWidth}
-            onResizeStart={handleResizeStart}
-          >
-            {/* Search Bar */}
-            <Box p={3} pt={2} pb={2}>
-              <TextInput
-                ref={searchInputRef}
-                leadingVisual={SearchIcon}
-                trailingAction={
-                  searchQuery ? (
-                    <TextInput.Action
-                      onClick={() => setSearchQuery('')}
-                      icon={XIcon}
-                      aria-label="Clear search"
-                    />
-                  ) : null
-                }
-                placeholder="Search emails... (/)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{
-                  width: '100%',
-                  borderRadius: '16px',
-                  '& input': {
-                    borderRadius: '16px'
-                  }
-                }}
-              />
-            </Box>
+    <ThemeProvider colorMode={colorMode === 'light' ? 'day' : 'night'}>
+      <BaseStyles>
+        <Box sx={{ backgroundColor: bg, pl: '12px', transition: 'background 0.2s' }} position="relative" display="flex" height="100vh" overflow="hidden">
+          {authenticated ? (
+            <>
+              <Sidebar
+                width={sidebarWidth}
+                onResizeStart={handleResizeStart}
+                colorMode={colorMode}
+              >
+                {/* Search Bar */}
+                <Box p={3} pt={2} pb={2}>
+                  <TextInput
+                    ref={searchInputRef}
+                    leadingVisual={SearchIcon}
+                    trailingAction={
+                      searchQuery ? (
+                        <TextInput.Action
+                          onClick={() => setSearchQuery('')}
+                          icon={XIcon}
+                          aria-label="Clear search"
+                        />
+                      ) : null
+                    }
+                    placeholder="Search emails... (/)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    sx={{
+                      width: '100%',
+                      borderRadius: '16px',
+                      backgroundColor: inputBg,
+                      borderColor: inputBorder,
+                      color: inputText,
+                      '& input': {
+                        borderRadius: '16px',
+                        backgroundColor: inputBg,
+                        color: inputText,
+                        '&::placeholder': {
+                          color: isLight ? '#656d76' : '#7d8590'
+                        }
+                      }
+                    }}
+                  />
+                </Box>
 
-            {/* Email List */}
-            <EmailList
-              emails={filteredEmails}
-              selectedEmail={selectedEmail}
-              onSelectEmail={handleEmailClick}
-              loading={loading && emails.length === 0} // Only show full loader if initial load
-              onLoadMore={() => fetchEmails(false)}
-              hasMore={!!nextPageToken}
+                {/* Email List */}
+                <EmailList
+                  emails={filteredEmails}
+                  selectedEmail={selectedEmail}
+                  onSelectEmail={handleEmailClick}
+                  loading={loading && emails.length === 0} // Only show full loader if initial load
+                  onLoadMore={() => fetchEmails(false)}
+                  hasMore={!!nextPageToken}
+                  colorMode={colorMode}
+                />
+              </Sidebar>
+
+              {/* Detail View */}
+              <EmailDetail email={selectedEmail} colorMode={colorMode} />
+            </>
+          ) : (
+            <LoginView onAuth={handleAuth} />
+          )}
+
+          {/* Global Resize Overlay - Prevents iframe from stealing mouse events */}
+          {isResizing && (
+            <Box
+              sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9999,
+                cursor: 'col-resize',
+                userSelect: 'none'
+              }}
             />
-          </Sidebar>
+          )}
 
-          {/* Detail View */}
-          <EmailDetail email={selectedEmail} />
-        </>
-      ) : (
-        <LoginView onAuth={handleAuth} />
-      )}
+          {/* Theme Toggle Button */}
+          {authenticated && (
+            <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 10000 }}>
+              <button
+                onClick={() => setColorMode(prev => prev === 'dark' ? 'light' : 'dark')}
+                style={{
+                  background: colorMode === 'dark' ? '#f0f6fc' : '#24292f',
+                  color: colorMode === 'dark' ? '#24292f' : '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  borderRadius: '50%',
+                  width: '48px',
+                  height: '48px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Toggle Theme"
+              >
+                {colorMode === 'dark' ? <MdLightMode size={24} /> : <MdDarkMode size={24} />}
+              </button>
+            </div>
+          )}
 
-      {/* Global Resize Overlay - Prevents iframe from stealing mouse events */}
-      {isResizing && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9999,
-            cursor: 'col-resize',
-            userSelect: 'none'
-          }}
-        />
-      )}
-
-      {/* Global Resize Cursor Override */}
-      <style>{`
+          {/* Global Styles */}
+          <style>{`
         body, html {
           margin: 0;
           padding: 0;
-          overflow: hidden; /* Prevent body scroll */
-          background-color: #000000 !important; /* Global dark bg */
+          overflow: hidden;
+          background-color: ${bg} !important;
         }
         #root {
-            background-color: #000000 !important;
+            background-color: ${bg} !important;
             height: 100vh;
+        }
+        /* UNIVERSAL IMAGE FIX */
+        img {
+            max-width: 100% !important;
+            height: auto !important;
+            width: auto !important;
+            object-fit: contain !important;
         }
         ::selection {
             background-color: rgba(31, 111, 235, 0.4);
         }
       `}</style>
-    </Box>
+        </Box>
+      </BaseStyles>
+    </ThemeProvider>
   )
 }
 

@@ -12,6 +12,7 @@ const Sidebar = ({ width, onResizeStart, children, colorMode }) => {
     const isLight = colorMode === 'light'
     const bg = isLight ? '#f6f8fa' : '#000000'
     const borderColor = isLight ? '#d0d7de' : '#30363d'
+    const textPrimary = isLight ? '#24292f' : '#e6edf3'
 
     return (
         <Box
@@ -56,7 +57,7 @@ const Sidebar = ({ width, onResizeStart, children, colorMode }) => {
                         }}
                     />
                 </Box>
-                <Heading as="h2" sx={{ fontSize: 5, fontWeight: 'bold', whiteSpace: 'nowrap', color: 'fg.default' }}>
+                <Heading as="h2" sx={{ fontSize: 5, fontWeight: 'bold', whiteSpace: 'nowrap', color: textPrimary }}>
                     Inbox
                 </Heading>
             </Box>

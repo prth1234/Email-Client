@@ -23,7 +23,13 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
-const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, hasMore }) => {
+const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, hasMore, colorMode }) => {
+    const isLight = colorMode === 'light'
+    const activeBg = isLight ? '#eef2f6' : 'rgba(17, 24, 39, 1)'
+    const hoverBg = isLight ? '#f6f8fa' : 'rgba(17, 24, 39, 0.4)'
+    const textPrimary = isLight ? '#24292f' : '#e6edf3'
+    const textSecondary = isLight ? '#57606a' : '#8b949e'
+    const textMuted = isLight ? '#656d76' : '#7d8590'
 
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
@@ -53,14 +59,15 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                         onSelect={() => onSelectEmail(email)}
                         sx={{
                             cursor: 'pointer',
-                            backgroundColor: selectedEmail?.id === email.id ? 'actionListItem.default.selectedBg' : 'transparent',
+                            backgroundColor: selectedEmail?.id === email.id ? activeBg : 'transparent',
                             '&:hover': {
-                                backgroundColor: 'actionListItem.default.hoverBg'
+                                backgroundColor: hoverBg
                             },
                             py: 3,
                             px: 3,
                             display: 'flex',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            position: 'relative' // Added for absolute positioning of unread indicator
                         }}
                     >
                         <ActionList.LeadingVisual>
@@ -95,72 +102,89 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                                     sx={{
                                         fontWeight: email.isUnread ? 'bold' : 'normal',
                                         fontSize: 1,
-                                        color: 'fg.default',
+                                        color: textPrimary,
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
-                                        flex: 1,
-                                        minWidth: 0
+                                        flex: 1
                                     }}
                                 >
                                     {email.senderName}
                                 </Text>
-                                <Text sx={{ fontSize: 0, color: 'fg.muted', flexShrink: 0 }}>
+                                <Text
+                                    sx={{
+                                        fontSize: 0,
+                                        color: textSecondary,
+                                        flexShrink: 0,
+                                        ml: 1
+                                    }}
+                                >
                                     {formatDate(email.date)}
                                 </Text>
                             </Box>
 
                             {/* Subject */}
                             <Text
-                                as="div"
                                 sx={{
+                                    fontWeight: email.isUnread ? 'bold' : 'normal',
                                     fontSize: 1,
-                                    fontWeight: email.isUnread ? 'semibold' : 'normal',
-                                    color: 'fg.default',
+                                    color: textPrimary,
+                                    mb: 1,
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
-                                    mb: 1
+                                    display: 'block'
                                 }}
                             >
-                                {email.subject || <Text as="span" fontStyle="italic">(No Subject)</Text>}
+                                {email.subject || '(No Subject)'}
                             </Text>
 
-                            {/* Snippet and category */}
-                            <Box display="flex" alignItems="center" justifyContent="space-between" gap={2}>
+                            {/* Snippet row with category */}
+                            <Box display="flex" alignItems="center" gap={2}>
                                 <Text
                                     sx={{
                                         fontSize: 0,
-                                        color: 'fg.muted',
+                                        color: textMuted,
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
-                                        flex: 1,
-                                        minWidth: 0
+                                        flex: 1
                                     }}
                                 >
                                     {email.snippet}
                                 </Text>
-                                {/* Tag removed as requested */}
-                            </Box>
-                        </Box>
 
-                        {email.isUnread && (
-                            <ActionList.TrailingVisual>
+                                {email.category && email.category !== 'Primary' && (
+                                    <Label
+                                        variant={CATEGORY_CONFIG[email.category]?.color || 'default'}
+                                        sx={{ flexShrink: 0, fontSize: '10px', textTransform: 'uppercase' }}
+                                    >
+                                        {email.category}
+                                    </Label>
+                                )}
+                            </Box>
+
+                            {/* Unread indicator */}
+                            {email.isUnread && (
                                 <Box
                                     sx={{
-                                        width: 8,
-                                        height: 8,
+                                        position: 'absolute',
+                                        left: '8px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        width: '6px',
+                                        height: '6px',
                                         borderRadius: '50%',
-                                        bg: 'accent.fg'
+                                        backgroundColor: 'accent.fg'
                                     }}
                                 />
-                            </ActionList.TrailingVisual>
-                        )}
+                            )}
+                        </Box>
                     </ActionList.Item>
                 ))}
-                {loading && hasMore && (
-                    <Box display="flex" justifyContent="center" p={2}>
+                {/* Load more indicator */}
+                {loading && emails.length > 0 && (
+                    <Box display="flex" justifyContent="center" p={3}>
                         <Spinner size="small" />
                     </Box>
                 )}
