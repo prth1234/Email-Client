@@ -139,7 +139,7 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                                 {email.subject || '(No Subject)'}
                             </Text>
 
-                            {/* Snippet row with category */}
+                            {/* Snippet row */}
                             <Box display="flex" alignItems="center" gap={2}>
                                 <Text
                                     sx={{
@@ -153,15 +153,6 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                                 >
                                     {email.snippet}
                                 </Text>
-
-                                {email.category && email.category !== 'Primary' && (
-                                    <Label
-                                        variant={CATEGORY_CONFIG[email.category]?.color || 'default'}
-                                        sx={{ flexShrink: 0, fontSize: '10px', textTransform: 'uppercase' }}
-                                    >
-                                        {email.category}
-                                    </Label>
-                                )}
                             </Box>
 
                             {/* Unread indicator */}
@@ -182,13 +173,23 @@ const EmailList = ({ emails, selectedEmail, onSelectEmail, loading, onLoadMore, 
                         </Box>
                     </ActionList.Item>
                 ))}
-                {/* Load more indicator */}
-                {loading && emails.length > 0 && (
-                    <Box display="flex" justifyContent="center" p={3}>
-                        <Spinner size="small" />
-                    </Box>
-                )}
             </ActionList>
+
+            {/* Load more indicator - visible when loading more emails */}
+            {loading && emails.length > 0 && (
+                <Box display="flex" justifyContent="center" p={4} sx={{ backgroundColor: 'transparent' }}>
+                    <Spinner size="small" />
+                </Box>
+            )}
+
+            {/* End of list indicator */}
+            {!hasMore && emails.length > 0 && (
+                <Box display="flex" justifyContent="center" p={3}>
+                    <Text sx={{ fontSize: 0, color: isLight ? '#656d76' : '#7d8590' }}>
+                        No more emails
+                    </Text>
+                </Box>
+            )}
         </Box>
     )
 }

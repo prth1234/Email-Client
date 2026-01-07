@@ -22,12 +22,20 @@ function App() {
     return saved ? parseInt(saved, 10) : 420
   })
   const [isResizing, setIsResizing] = useState(false)
-  const [colorMode, setColorMode] = useState('dark')
+  const [colorMode, setColorMode] = useState(() => {
+    const saved = localStorage.getItem('colorMode')
+    return saved || 'dark'
+  })
 
   // Save width to localStorage
   useEffect(() => {
     localStorage.setItem('sidebarWidth', sidebarWidth.toString())
   }, [sidebarWidth])
+
+  // Save colorMode to localStorage
+  useEffect(() => {
+    localStorage.setItem('colorMode', colorMode)
+  }, [colorMode])
 
   const [nextPageToken, setNextPageToken] = useState(null)
   const searchInputRef = useRef(null)
@@ -213,10 +221,19 @@ function App() {
                       backgroundColor: inputBg,
                       borderColor: inputBorder,
                       color: inputText,
+                      '&:focus-within': {
+                        outline: 'none',
+                        boxShadow: 'none',
+                        borderColor: inputBorder
+                      },
                       '& input': {
                         borderRadius: '16px',
                         backgroundColor: inputBg,
                         color: inputText,
+                        '&:focus': {
+                          outline: 'none',
+                          boxShadow: 'none'
+                        },
                         '&::placeholder': {
                           color: isLight ? '#656d76' : '#7d8590'
                         }
