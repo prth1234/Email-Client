@@ -26,8 +26,16 @@ const DARK_MODE_SCRIPT = `
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
                         min-height: 100vh;
                         margin: 0;
-                        padding: 24px; /* Added consistent padding on all sides */
+                        padding: 24px;
                         box-sizing: border-box;
+                    }
+                    /* Hiding Scrollbar */
+                    ::-webkit-scrollbar {
+                        display: none;
+                    }
+                    html {
+                        scrollbar-width: none; /* Firefox */
+                        -ms-overflow-style: none; /* IE/Edge */
                     }
                     body * {
                         background-color: transparent !important;
@@ -35,11 +43,18 @@ const DARK_MODE_SCRIPT = `
                         color: inherit !important;
                         border-color: #1a1a1a !important;
                     }
-                    /* Removed injected-button styles as requested */
                     a { color: #58a6ff !important; text-decoration: none !important; }
                     a:hover { text-decoration: underline !important; }
-                    /* Fixed image sizing: allow height to be determined by attributes or auto if not set, do not force auto */
-                    img { opacity: 0.9; max-width: 100% !important; border-radius: 4px; }
+                    
+                    /* STRICT Image Sizing - Force containment */
+                    img { 
+                        opacity: 0.9; 
+                        max-width: 100% !important; 
+                        height: auto !important; 
+                        object-fit: contain !important;
+                        display: block; 
+                        border-radius: 4px; 
+                    }
                 \`;
                 (document.head || document.body).appendChild(style);
             }
@@ -62,9 +77,6 @@ const DARK_MODE_SCRIPT = `
                 el.removeAttribute('background');
                 el.removeAttribute('text');
 
-                // Don't strip background from button-like elements if we aren't injecting styles? 
-                // Actually, user wants pure black background, so we still strip.
-                // Just don't add the fake button class.
                 el.style.setProperty('background-color', 'transparent', 'important');
                 el.style.setProperty('background', 'transparent', 'important');
                 
@@ -77,7 +89,12 @@ const DARK_MODE_SCRIPT = `
                 if (tagName === 'A') {
                     el.setAttribute('target', '_blank');
                     el.style.setProperty('color', '#58a6ff', 'important');
-                    // Removed logic that converted links to buttons
+                }
+                
+                // Extra safety for images
+                if (tagName === 'IMG') {
+                   el.style.setProperty('max-width', '100%', 'important');
+                   el.style.setProperty('height', 'auto', 'important');
                 }
             }
         } catch(e) { console.error('Dark mode error:', e); }

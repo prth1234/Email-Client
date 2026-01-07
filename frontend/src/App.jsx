@@ -41,6 +41,7 @@ function App() {
       // Only trigger if not already typing in an input
       if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
         e.preventDefault()
+        // Focus without selecting
         searchInputRef.current?.focus()
       }
     }
@@ -175,7 +176,7 @@ function App() {
   )
 
   return (
-    <Box sx={{ backgroundColor: '#000000' }} position="relative" display="flex" height="100vh" overflow="hidden">
+    <Box sx={{ backgroundColor: '#000000', pl: '12px' }} position="relative" display="flex" height="100vh" overflow="hidden">
       {authenticated ? (
         <>
           <Sidebar
