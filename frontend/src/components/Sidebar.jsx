@@ -2,12 +2,16 @@ import React from 'react'
 import { Box, Heading } from '@primer/react'
 import logo from '../assets/query-pilot-logo.png'
 
-const Sidebar = ({ width, onResizeStart, children }) => {
+const Sidebar = ({ width, onResizeStart, children, colorMode }) => {
     const handleMouseDown = (e) => {
         e.preventDefault()
         e.stopPropagation() // Prevent issues with selection or other events
         onResizeStart(e)
     }
+
+    const isLight = colorMode === 'light'
+    const bg = isLight ? '#f6f8fa' : '#000000'
+    const borderColor = isLight ? '#d0d7de' : '#30363d'
 
     return (
         <Box
@@ -17,20 +21,17 @@ const Sidebar = ({ width, onResizeStart, children }) => {
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                flexDirection: 'column',
                 position: 'relative',
                 flexShrink: 0,
-                backgroundColor: '#000000',
-                transition: 'width 0.05s linear'
+                backgroundColor: bg,
+                transition: 'width 0.05s linear',
+                borderRight: `1px solid ${borderColor}`
             }}
         >
             {/* Logo Header */}
             <Box
                 p={4}
                 pb={3}
-                borderColor="border.default"
-                borderBottomWidth={1}
-                borderBottomStyle="solid"
                 display="flex"
                 alignItems="center"
                 sx={{ flexShrink: 0, gap: '24px' }}
@@ -55,7 +56,7 @@ const Sidebar = ({ width, onResizeStart, children }) => {
                         }}
                     />
                 </Box>
-                <Heading as="h2" sx={{ fontSize: 4, fontWeight: 'bold', whiteSpace: 'nowrap', color: 'fg.default' }}>
+                <Heading as="h2" sx={{ fontSize: 5, fontWeight: 'bold', whiteSpace: 'nowrap', color: 'fg.default' }}>
                     Inbox
                 </Heading>
             </Box>

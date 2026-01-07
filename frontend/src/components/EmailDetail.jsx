@@ -29,14 +29,8 @@ const DARK_MODE_SCRIPT = `
                         padding: 24px;
                         box-sizing: border-box;
                     }
-                    /* Hiding Scrollbar */
-                    ::-webkit-scrollbar {
-                        display: none;
-                    }
-                    html {
-                        scrollbar-width: none; /* Firefox */
-                        -ms-overflow-style: none; /* IE/Edge */
-                    }
+                    ::-webkit-scrollbar { display: none; }
+                    html { scrollbar-width: none; -ms-overflow-style: none; }
                     body * {
                         background-color: transparent !important;
                         background: transparent !important;
@@ -46,13 +40,12 @@ const DARK_MODE_SCRIPT = `
                     a { color: #58a6ff !important; text-decoration: none !important; }
                     a:hover { text-decoration: underline !important; }
                     
-                    /* STRICT Image Sizing - Force containment */
+                    /* Image fixes: allow natural size up to 100% width, no forced height */
                     img { 
                         opacity: 0.9; 
                         max-width: 100% !important; 
-                        height: auto !important; 
-                        object-fit: contain !important;
-                        display: block; 
+                        object-fit: contain;
+                        height: auto;
                         border-radius: 4px; 
                     }
                 \`;
@@ -79,7 +72,6 @@ const DARK_MODE_SCRIPT = `
 
                 el.style.setProperty('background-color', 'transparent', 'important');
                 el.style.setProperty('background', 'transparent', 'important');
-                
                 el.style.setProperty('border-color', '#1a1a1a', 'important');
 
                 if (tagName !== 'A') {
@@ -89,12 +81,6 @@ const DARK_MODE_SCRIPT = `
                 if (tagName === 'A') {
                     el.setAttribute('target', '_blank');
                     el.style.setProperty('color', '#58a6ff', 'important');
-                }
-                
-                // Extra safety for images
-                if (tagName === 'IMG') {
-                   el.style.setProperty('max-width', '100%', 'important');
-                   el.style.setProperty('height', 'auto', 'important');
                 }
             }
         } catch(e) { console.error('Dark mode error:', e); }
@@ -106,7 +92,39 @@ const DARK_MODE_SCRIPT = `
 })();
 `;
 
-const EmailDetail = ({ email }) => {
+const LIGHT_MODE_SCRIPT = `
+(function() {
+    var styleId = 'light-mode-style';
+    if (!document.getElementById(styleId)) {
+        var style = document.createElement('style');
+        style.id = styleId;
+        style.innerHTML = \`
+            html, body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                margin: 0;
+                padding: 24px;
+                box-sizing: border-box;
+                background-color: #ffffff;
+                color: #24292f;
+            }
+            img { max-width: 100%; height: auto; }
+            a { color: #0969da; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            ::-webkit-scrollbar { display: none; }
+            html { scrollbar-width: none; }
+        \`;
+        document.head.appendChild(style);
+    }
+})();
+`;
+
+const EmailDetail = ({ email, colorMode }) => {
+    const isLight = colorMode === 'light'
+    const bg = isLight ? '#ffffff' : '#000000'
+    const textPrimary = isLight ? '#24292f' : '#e6edf3'
+    const textSecondary = isLight ? '#57606a' : '#8b949e'
+    const border = isLight ? '#d0d7de' : '#1a1a1a'
+
     if (!email) {
         return (
             <Box
@@ -114,7 +132,7 @@ const EmailDetail = ({ email }) => {
                 alignItems="center"
                 justifyContent="center"
                 height="100%"
-                bg="#000000"
+                bg={bg}
             >
                 <Text sx={{ color: 'fg.muted', fontSize: 2 }}></Text>
             </Box>
@@ -122,11 +140,11 @@ const EmailDetail = ({ email }) => {
     }
 
     return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#000000', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: bg, overflow: 'hidden' }}>
             {/* Email Header - Full Width */}
-            <div style={{ flexShrink: 0, padding: '24px', paddingBottom: '16px', backgroundColor: '#000000', borderBottom: '1px solid #1a1a1a' }}>
+            <div style={{ flexShrink: 0, padding: '24px', paddingBottom: '16px', backgroundColor: bg, borderBottom: `1px solid ${border}` }}>
                 <Box display="flex" alignItems="center" mb={3}>
-                    <Heading as="h3" sx={{ fontSize: 3, mb: 1, flex: 1, color: '#e6edf3' }}>
+                    <Heading as="h3" sx={{ fontSize: 3, mb: 1, flex: 1, color: textPrimary }}>
                         {email.subject || '(No Subject)'}
                     </Heading>
                     <Box display="flex" gap={2} alignItems="center">
@@ -149,7 +167,7 @@ const EmailDetail = ({ email }) => {
                                 {email.category}
                             </Box>
                         )}
-                        <Text sx={{ fontSize: 1, color: '#8b949e', ml: 2 }}>
+                        <Text sx={{ fontSize: 1, color: textSecondary, ml: 2 }}>
                             {new Date(email.date).toLocaleString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -172,7 +190,7 @@ const EmailDetail = ({ email }) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            backgroundColor: '#000000'
+                            backgroundColor: isLight ? '#f6f8fa' : '#161b22'
                         }}
                     >
                         <img
@@ -186,10 +204,10 @@ const EmailDetail = ({ email }) => {
                         />
                     </Box>
                     <Box ml={3}>
-                        <Text sx={{ fontSize: 2, color: '#e6edf3', fontWeight: 'bold', display: 'block' }}>
+                        <Text sx={{ fontSize: 2, color: textPrimary, fontWeight: 'bold', display: 'block' }}>
                             {email.senderName}
                         </Text>
-                        <Text sx={{ fontSize: 1, color: '#8b949e' }}>
+                        <Text sx={{ fontSize: 1, color: textSecondary }}>
                             &lt;{email.senderEmail}&gt;
                         </Text>
                     </Box>
@@ -197,45 +215,20 @@ const EmailDetail = ({ email }) => {
             </div>
 
             {/* Email Body - Centered with Padding */}
-            <div style={{ flex: 1, overflow: 'hidden', backgroundColor: '#000000', padding: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ flex: 1, overflow: 'hidden', backgroundColor: bg, padding: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ width: '100%', maxWidth: '800px', height: '100%', backgroundColor: 'transparent' }}>
                     {email.bodyHtml ? (
                         <iframe
                             srcDoc={`
                   <!DOCTYPE html>
-                  <html style="background-color: #000000;">
+                  <html style="background-color: ${bg};">
                     <head>
                       <meta charset="utf-8">
                       <meta name="viewport" content="width=device-width, initial-scale=1">
                       <base target="_blank">
-                      <style>
-                        :root { color-scheme: dark; }
-                        html, body {
-                          background-color: #000000 !important;
-                          color: #e6edf3 !important;
-                          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-                          font-size: 16px !important;
-                          line-height: 1.6;
-                          margin: 0;
-                          padding: 40px 0; /* Vertical padding */
-                          min-height: 100vh;
-                          overflow-x: hidden;
-                        }
-                        *, *::before, *::after {
-                          background-color: transparent !important;
-                          color: inherit !important;
-                          border-color: #1a1a1a !important;
-                        }
-                        a { color: #58a6ff !important; text-decoration: none; }
-                        a:hover { text-decoration: underline; }
-                        img { max-width: 100% !important; height: auto !important; border-radius: 4px; }
-                        ::-webkit-scrollbar { width: 10px; height: 10px; }
-                        ::-webkit-scrollbar-track { background: #000000; }
-                        ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 5px; }
-                      </style>
-                      <script>${DARK_MODE_SCRIPT}</script>
+                      <script>${isLight ? LIGHT_MODE_SCRIPT : DARK_MODE_SCRIPT}</script>
                     </head>
-                    <body style="background-color: #000000;">${email.bodyHtml}</body>
+                    <body style="background-color: ${bg};">${email.bodyHtml}</body>
                   </html>
                 `}
                             style={{
@@ -254,13 +247,13 @@ const EmailDetail = ({ email }) => {
                             sx={{
                                 fontSize: 3,
                                 lineHeight: 1.6,
-                                color: '#e6edf3',
+                                color: textPrimary,
                                 whiteSpace: 'pre-wrap',
                                 wordWrap: 'break-word',
                                 fontFamily: 'system-ui, -apple-system, sans-serif',
                                 height: '100%',
                                 overflow: 'auto',
-                                backgroundColor: '#000000'
+                                backgroundColor: bg
                             }}
                         >
                             {email.bodyText || email.snippet}

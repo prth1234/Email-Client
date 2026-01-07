@@ -21,6 +21,7 @@ function App() {
     return saved ? parseInt(saved, 10) : 420
   })
   const [isResizing, setIsResizing] = useState(false)
+  const [colorMode, setColorMode] = useState('dark')
 
   // Save width to localStorage
   useEffect(() => {
@@ -69,7 +70,7 @@ function App() {
 
     if (isResizing) {
       document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none' // formatting fix
+      document.body.style.userSelect = 'none'
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
     }
@@ -111,22 +112,13 @@ function App() {
 
     setLoading(true)
     try {
-      let url = `${API_URL}/api/emails?limit=20`
+      const url = new URL(`${API_URL}/api/emails?limit=20`)
       if (!reset && nextPageToken) {
-        url += `&pageToken=${nextPageToken}`
+        url.searchParams.append('pageToken', nextPageToken)
       }
-
-      // If searching, append query (this mock logic needs backend support for search+pagination)
-      // The backend supports q param.
-      // Note: We might want to filter client side if backend doesn't support complex search, 
-      // but current backend passes q to gmail.
-      // However, the current code filtered client side. 
-      // Let's rely on backend search if possible layer, but for now we keep client filtering 
-      // or we accept that 'emails' list grows.
-      // Actually, if we use pagination, client-side filtering of *fetched* emails is weird 
-      // because we might not have fetched the matching ones yet.
-      // For now, let's just fetch, and if search is local, it works on loaded items. 
-      // Ideally we pass q to backend.
+      if (searchQuery) {
+        url.searchParams.append('q', searchQuery)
+      }
 
       const res = await fetch(url)
       const data = await res.json()
@@ -150,6 +142,12 @@ function App() {
       console.error('Error fetching emails:', e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      fetchEmails(true)
     }
   }
 
