@@ -14,8 +14,18 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
-  const [sidebarWidth, setSidebarWidth] = useState(600) // Increased default width
+
+  // Initialize from localStorage or default to 420
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebarWidth')
+    return saved ? parseInt(saved, 10) : 420
+  })
   const [isResizing, setIsResizing] = useState(false)
+
+  // Save width to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', sidebarWidth.toString())
+  }, [sidebarWidth])
 
   const [nextPageToken, setNextPageToken] = useState(null)
   const searchInputRef = useRef(null)
@@ -165,7 +175,7 @@ function App() {
   )
 
   return (
-    <Box bg="#000000" position="relative" display="flex" height="100vh" overflow="hidden">
+    <Box sx={{ backgroundColor: '#000000' }} position="relative" display="flex" height="100vh" overflow="hidden">
       {authenticated ? (
         <>
           <Sidebar
@@ -235,10 +245,15 @@ function App() {
 
       {/* Global Resize Cursor Override */}
       <style>{`
-        body {
+        body, html {
           margin: 0;
+          padding: 0;
           overflow: hidden; /* Prevent body scroll */
-          background-color: #000000; /* Global dark bg */
+          background-color: #000000 !important; /* Global dark bg */
+        }
+        #root {
+            background-color: #000000 !important;
+            height: 100vh;
         }
         ::selection {
             background-color: rgba(31, 111, 235, 0.4);

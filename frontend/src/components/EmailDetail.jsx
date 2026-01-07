@@ -12,92 +12,79 @@ const DARK_MODE_SCRIPT = `
 (function() {
     function enforceDarkMode() {
         try {
-            // 1. Force global CSS overrides via a style tag
             var styleId = 'dark-mode-style';
             var existingStyle = document.getElementById(styleId);
             if (!existingStyle) {
                 var style = document.createElement('style');
                 style.id = styleId;
                 style.innerHTML = \`
+                    :root { color-scheme: dark; }
                     html, body {
                         background-color: #000000 !important;
+                        background: #000000 !important;
                         color: #e6edf3 !important;
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
                         min-height: 100vh;
+                        margin: 0;
+                        padding: 24px; /* Added consistent padding on all sides */
+                        box-sizing: border-box;
                     }
-                    /* Target all elements AND pseudo-elements to strip backgrounds */
-                    *, *::before, *::after {
+                    body * {
                         background-color: transparent !important;
+                        background: transparent !important;
                         color: inherit !important;
-                        border-color: #1a1a1a !important; /* Extremely dark border */
+                        border-color: #1a1a1a !important;
                     }
-                    /* Exceptions for our button injection */
-                    .injected-button {
-                        background-color: #1f6feb !important;
-                        color: #ffffff !important;
-                        display: inline-block !important;
-                    }
+                    /* Removed injected-button styles as requested */
                     a { color: #58a6ff !important; text-decoration: none !important; }
                     a:hover { text-decoration: underline !important; }
-                    img { opacity: 0.9; max-width: 100%; height: auto; }
-                    
+                    /* Fixed image sizing: allow height to be determined by attributes or auto if not set, do not force auto */
+                    img { opacity: 0.9; max-width: 100% !important; border-radius: 4px; }
                 \`;
-                // Append to head or body
                 (document.head || document.body).appendChild(style);
             }
 
-            // 2. Inline style overrides (aggressive)
             var all = document.querySelectorAll('*');
             for (var i=0; i < all.length; i++) {
                 var el = all[i];
                 var tagName = el.tagName;
+                
+                if (tagName === 'HTML' || tagName === 'BODY') {
+                    el.style.setProperty('background-color', '#000000', 'important');
+                    el.style.setProperty('background', '#000000', 'important');
+                    el.style.setProperty('color', '#e6edf3', 'important');
+                    continue;
+                }
+
                 if (['SCRIPT', 'STYLE', 'HEAD', 'META', 'TITLE', 'LINK', 'BASE'].includes(tagName)) continue;
 
-                // Remove legacy attributes
                 el.removeAttribute('bgcolor');
                 el.removeAttribute('background');
                 el.removeAttribute('text');
-                el.removeAttribute('link');
-                el.removeAttribute('vlink');
-                el.removeAttribute('alink');
 
-                // Force inline styles
+                // Don't strip background from button-like elements if we aren't injecting styles? 
+                // Actually, user wants pure black background, so we still strip.
+                // Just don't add the fake button class.
                 el.style.setProperty('background-color', 'transparent', 'important');
-                el.style.setProperty('background', 'transparent', 'important'); 
-                el.style.setProperty('border-color', '#1a1a1a', 'important'); // Darken inline borders
+                el.style.setProperty('background', 'transparent', 'important');
+                
+                el.style.setProperty('border-color', '#1a1a1a', 'important');
 
-                if (tagName !== 'A' && !el.classList.contains('injected-button')) {
+                if (tagName !== 'A') {
                     el.style.setProperty('color', '#e6edf3', 'important');
                 }
 
-                // Handle links and buttons
                 if (tagName === 'A') {
                     el.setAttribute('target', '_blank');
-                    el.setAttribute('rel', 'noopener noreferrer');
                     el.style.setProperty('color', '#58a6ff', 'important');
-                    var text = el.textContent || el.innerText || '';
-                    text = text.trim().toUpperCase();
-                    
-                    // Button detection
-                    if (text === 'CLICK HERE' || text.includes('VIEW') || text.includes('CHECK') || text.includes('VERIFY')) {
-                        el.classList.add('injected-button');
-                        el.style.setProperty('background-color', '#1f6feb', 'important');
-                        el.style.setProperty('color', '#ffffff', 'important');
-                        el.style.border = '1px solid rgba(240,246,252,0.1)';
-                        el.style.borderRadius = '6px';
-                        el.style.padding = '10px 20px';
-                        el.style.textDecoration = 'none';
-                        el.style.fontWeight = '600';
-                        el.style.textAlign = 'center';
-                    }
+                    // Removed logic that converted links to buttons
                 }
             }
-        } catch(e) { console.error('Dark mode enforcement error:', e); }
+        } catch(e) { console.error('Dark mode error:', e); }
     }
     
-    // Run immediately and periodically
     enforceDarkMode();
-    setInterval(enforceDarkMode, 500);
+    setInterval(enforceDarkMode, 100);
     window.addEventListener('load', enforceDarkMode);
 })();
 `;
@@ -118,11 +105,11 @@ const EmailDetail = ({ email }) => {
     }
 
     return (
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', bg: '#000000' }}>
-            {/* Email Header - Removed Border */}
-            <Box p={4} pb={3} sx={{ flexShrink: 0, bg: '#000000' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#000000', overflow: 'hidden' }}>
+            {/* Email Header - Full Width */}
+            <div style={{ flexShrink: 0, padding: '24px', paddingBottom: '16px', backgroundColor: '#000000', borderBottom: '1px solid #1a1a1a' }}>
                 <Box display="flex" alignItems="center" mb={3}>
-                    <Heading as="h3" sx={{ fontSize: 3, mb: 1, flex: 1, color: 'fg.default' }}>
+                    <Heading as="h3" sx={{ fontSize: 3, mb: 1, flex: 1, color: '#e6edf3' }}>
                         {email.subject || '(No Subject)'}
                     </Heading>
                     <Box display="flex" gap={2} alignItems="center">
@@ -132,12 +119,12 @@ const EmailDetail = ({ email }) => {
                                     display: 'inline-block',
                                     py: '2px',
                                     px: '6px',
-                                    borderRadius: '4px', // Rectangular with slight radius
-                                    fontSize: '10px', // Smaller font
+                                    borderRadius: '4px',
+                                    fontSize: '10px',
                                     fontWeight: '600',
-                                    color: '#2ea043', // Dark green text
+                                    color: '#2ea043',
                                     border: '1px solid #2ea043',
-                                    bg: 'rgba(46, 160, 67, 0.1)', // Very subtle green tint or transparent
+                                    backgroundColor: 'rgba(46, 160, 67, 0.1)',
                                     textTransform: 'uppercase',
                                     ml: 2
                                 }}
@@ -145,7 +132,7 @@ const EmailDetail = ({ email }) => {
                                 {email.category}
                             </Box>
                         )}
-                        <Text sx={{ fontSize: 1, color: 'fg.muted', ml: 2 }}>
+                        <Text sx={{ fontSize: 1, color: '#8b949e', ml: 2 }}>
                             {new Date(email.date).toLocaleString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -167,7 +154,8 @@ const EmailDetail = ({ email }) => {
                             flexShrink: 0,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            backgroundColor: '#000000'
                         }}
                     >
                         <img
@@ -181,88 +169,89 @@ const EmailDetail = ({ email }) => {
                         />
                     </Box>
                     <Box ml={3}>
-                        <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'bold', display: 'block' }}>
+                        <Text sx={{ fontSize: 2, color: '#e6edf3', fontWeight: 'bold', display: 'block' }}>
                             {email.senderName}
                         </Text>
-                        <Text sx={{ fontSize: 1, color: 'fg.muted' }}>
+                        <Text sx={{ fontSize: 1, color: '#8b949e' }}>
                             &lt;{email.senderEmail}&gt;
                         </Text>
                     </Box>
                 </Box>
-            </Box>
+            </div>
 
-            {/* Email Body */}
-            <Box sx={{ flex: 1, overflow: 'hidden', bg: '#000000', p: 0 }}>
-                {email.bodyHtml ? (
-                    <iframe
-                        srcDoc={`
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1">
-                  <base target="_blank">
-                  <style>
-                    :root { color-scheme: dark; }
-                    html, body {
-                      background-color: #000000 !important;
-                      color: #e6edf3 !important;
-                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-                      font-size: 16px !important;
-                      line-height: 1.6;
-                      margin: 0;
-                      padding: 32px; /* Consistent padding */
-                      min-height: 100vh;
-                      overflow-x: hidden;
-                    }
-                    /* Base Reset including psuedos */
-                    *, *::before, *::after {
-                      background-color: transparent !important;
-                      color: inherit !important;
-                      border-color: #1a1a1a !important; /* Dark dark grey */
-                    }
-                    a { color: #58a6ff !important; text-decoration: none; }
-                    a:hover { text-decoration: underline; }
-                    img { max-width: 100% !important; height: auto !important; border-radius: 4px; }
-                    /* Scrollbar Styling - much darker */
-                    ::-webkit-scrollbar { width: 10px; height: 10px; }
-                    ::-webkit-scrollbar-track { background: #000000; }
-                    ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 5px; }
-                  </style>
-                  <script>${DARK_MODE_SCRIPT}</script>
-                </head>
-                <body>${email.bodyHtml}</body>
-              </html>
-            `}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            border: 'none',
-                            backgroundColor: '#000000'
-                        }}
-                        sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-scripts"
-                        title="Email Content"
-                    />
-                ) : (
-                    <Box
-                        p={4}
-                        sx={{
-                            fontSize: 3,
-                            lineHeight: 1.6,
-                            color: 'fg.default',
-                            whiteSpace: 'pre-wrap',
-                            wordWrap: 'break-word',
-                            fontFamily: 'system-ui, -apple-system, sans-serif',
-                            height: '100%',
-                            overflow: 'auto',
-                            bg: '#000000'
-                        }}
-                    >
-                        {email.bodyText || email.snippet}
-                    </Box>
-                )}
-            </Box>
-        </Box>
+            {/* Email Body - Centered with Padding */}
+            <div style={{ flex: 1, overflow: 'hidden', backgroundColor: '#000000', padding: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: '100%', maxWidth: '800px', height: '100%', backgroundColor: 'transparent' }}>
+                    {email.bodyHtml ? (
+                        <iframe
+                            srcDoc={`
+                  <!DOCTYPE html>
+                  <html style="background-color: #000000;">
+                    <head>
+                      <meta charset="utf-8">
+                      <meta name="viewport" content="width=device-width, initial-scale=1">
+                      <base target="_blank">
+                      <style>
+                        :root { color-scheme: dark; }
+                        html, body {
+                          background-color: #000000 !important;
+                          color: #e6edf3 !important;
+                          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                          font-size: 16px !important;
+                          line-height: 1.6;
+                          margin: 0;
+                          padding: 40px 0; /* Vertical padding */
+                          min-height: 100vh;
+                          overflow-x: hidden;
+                        }
+                        *, *::before, *::after {
+                          background-color: transparent !important;
+                          color: inherit !important;
+                          border-color: #1a1a1a !important;
+                        }
+                        a { color: #58a6ff !important; text-decoration: none; }
+                        a:hover { text-decoration: underline; }
+                        img { max-width: 100% !important; height: auto !important; border-radius: 4px; }
+                        ::-webkit-scrollbar { width: 10px; height: 10px; }
+                        ::-webkit-scrollbar-track { background: #000000; }
+                        ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 5px; }
+                      </style>
+                      <script>${DARK_MODE_SCRIPT}</script>
+                    </head>
+                    <body style="background-color: #000000;">${email.bodyHtml}</body>
+                  </html>
+                `}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                display: 'block'
+                            }}
+                            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-scripts"
+                            title="Email Content"
+                        />
+                    ) : (
+                        <Box
+                            p={5}
+                            sx={{
+                                fontSize: 3,
+                                lineHeight: 1.6,
+                                color: '#e6edf3',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontFamily: 'system-ui, -apple-system, sans-serif',
+                                height: '100%',
+                                overflow: 'auto',
+                                backgroundColor: '#000000'
+                            }}
+                        >
+                            {email.bodyText || email.snippet}
+                        </Box>
+                    )}
+                </div>
+            </div>
+        </div>
     )
 }
 

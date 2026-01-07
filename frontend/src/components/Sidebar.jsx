@@ -20,7 +20,7 @@ const Sidebar = ({ width, onResizeStart, children }) => {
                 flexDirection: 'column',
                 position: 'relative',
                 flexShrink: 0,
-                bg: '#000000',
+                backgroundColor: '#000000',
                 transition: 'width 0.05s linear'
             }}
         >
